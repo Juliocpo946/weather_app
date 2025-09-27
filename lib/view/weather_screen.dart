@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/weather_model.dart';
 import '../viewmodel/weather_viewmodel.dart';
+import '../viewmodel/weather_forecast_viewmodel.dart';
 import 'widgets/current_status_widget.dart';
 import 'widgets/rain_widget.dart';
 import 'widgets/stars_widget.dart';
@@ -12,54 +13,74 @@ class WeatherScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<WeatherViewModel>();
-
     return Scaffold(
       extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          // Fondo animado y capas de opacidad
-          AnimatedContainer(
-            duration: const Duration(seconds: 2),
-            curve: Curves.easeInOut,
-            decoration: BoxDecoration(gradient: viewModel.backgroundGradient),
-          ),
-          AnimatedContainer(
-            duration: const Duration(seconds: 2),
-            curve: Curves.easeInOut,
-            color: Colors.black.withOpacity(1 - viewModel.backgroundOpacity),
-          ),
-
-          // Efectos climáticos (Estrellas y Lluvia)
-          AnimatedOpacity(
-            duration: const Duration(seconds: 2),
-            opacity: viewModel.showStars ? 1.0 : 0.0,
-            child: const StarsWidget(numberOfStars: 150),
-          ),
-          AnimatedOpacity(
-            duration: const Duration(seconds: 1),
-            opacity:
-            viewModel.currentWeather == WeatherCondition.lluvioso ? 1.0 : 0.0,
-            child: RainWidget(level: viewModel.currentRainLevel),
-          ),
-
-          // Contenedor principal para los widgets de información
-          Positioned(
-            bottom: 40,
-            left: 30,
-            right: 100,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                // Nuevo widget de estado actual
-                CurrentStatusWidget(),
-                SizedBox(height: 15),
-                // Widget de pronóstico
-                WeatherForecastWidget(),
-              ],
-            ),
-          ),
-        ],
+      body: Consumer<WeatherViewModel>(
+        builder: (context, viewModel, child) {
+          return Stack(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(seconds: 2),
+                curve: Curves.easeInOut,
+                decoration: BoxDecoration(gradient: viewModel.backgroundGradient),
+              ),
+              AnimatedContainer(
+                duration: const Duration(seconds: 2),
+                curve: Curves.easeInOut,
+                color: Colors.black.withOpacity(1 - viewModel.backgroundOpacity),
+              ),
+              AnimatedOpacity(
+                duration: const Duration(seconds: 2),
+                opacity: viewModel.showStars ? 1.0 : 0.0,
+                child: const StarsWidget(numberOfStars: 150),
+              ),
+              AnimatedOpacity(
+                duration: const Duration(seconds: 1),
+                opacity: viewModel.currentWeather == WeatherCondition.lluvioso ? 1.0 : 0.0,
+                child: RainWidget(level: viewModel.currentRainLevel),
+              ),
+              Positioned(
+                bottom: 40,
+                left: 30,
+                right: 100,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CurrentStatusWidget(),
+                    const SizedBox(height: 15),
+                    const WeatherForecastWidget(),
+                    if (viewModel.error != null) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error, color: Colors.white),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                viewModel.error!,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.refresh, color: Colors.white),
+                              onPressed: () => viewModel.refresh(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: _buildControlButtons(context),
     );
@@ -78,33 +99,77 @@ class WeatherScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              FloatingActionButton(
-                onPressed: viewModel.cycleTimeOfDay,
-                tooltip: 'Cambiar Hora',
-                heroTag: 'time',
-                child: const Icon(Icons.access_time),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: FloatingActionButton(
+                  onPressed: viewModel.cycleTimeOfDay,
+                  tooltip: 'Cambiar Hora',
+                  heroTag: 'time',
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  child: const Icon(Icons.access_time, color: Colors.white),
+                ),
               ),
               const SizedBox(height: 10),
-              FloatingActionButton(
-                onPressed: viewModel.cycleWeatherCondition,
-                tooltip: 'Cambiar Clima',
-                heroTag: 'weather',
-                child: const Icon(Icons.cloud_outlined),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: FloatingActionButton(
+                  onPressed: viewModel.cycleWeatherCondition,
+                  tooltip: 'Cambiar Clima',
+                  heroTag: 'weather',
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  child: const Icon(Icons.cloud_outlined, color: Colors.white),
+                ),
               ),
               const SizedBox(height: 10),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 500),
-                opacity: weatherState.currentWeather == WeatherCondition.lluvioso
-                    ? 1.0
-                    : 0.0,
+                opacity: weatherState.currentWeather == WeatherCondition.lluvioso ? 1.0 : 0.0,
                 child: weatherState.currentWeather == WeatherCondition.lluvioso
-                    ? FloatingActionButton(
-                  onPressed: viewModel.cycleRainLevel,
-                  tooltip: 'Cambiar Intensidad',
-                  heroTag: 'rain',
-                  child: const Icon(Icons.water_drop_outlined),
+                    ? Container(
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: FloatingActionButton(
+                    onPressed: viewModel.cycleRainLevel,
+                    tooltip: 'Cambiar Intensidad',
+                    heroTag: 'rain',
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    child: const Icon(Icons.water_drop_outlined, color: Colors.white),
+                  ),
                 )
                     : const SizedBox(),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: FloatingActionButton(
+                  onPressed: () {
+                    viewModel.refresh();
+                    context.read<WeatherForecastViewModel>().refresh();
+                  },
+                  tooltip: 'Actualizar',
+                  heroTag: 'refresh',
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  child: const Icon(Icons.refresh, color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -113,4 +178,3 @@ class WeatherScreen extends StatelessWidget {
     );
   }
 }
-

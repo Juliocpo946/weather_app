@@ -1,61 +1,103 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import '../core/services/api_service.dart';
+import '../core/constants/app_constants.dart';
+import '../core/utils/weather_utils.dart';
+import '../core/utils/error_handler.dart';
 import '../model/daily_forecast_model.dart';
 import '../model/hourly_forecast_model.dart';
 
 class WeatherForecastViewModel extends ChangeNotifier {
+  final ApiService _apiService = ApiService();
+
   bool _isLoading = true;
+  String? _error;
   List<HourlyForecast> _hourlyForecasts = [];
   List<DailyForecast> _dailyForecasts = [];
+  String _currentLocation = AppConstants.availableLocations.first;
+  bool _hasData = false;
 
   bool get isLoading => _isLoading;
+  String? get error => _error;
   List<HourlyForecast> get hourlyForecasts => _hourlyForecasts;
   List<DailyForecast> get dailyForecasts => _dailyForecasts;
+  String get currentLocation => _currentLocation;
+  bool get hasData => _hasData;
 
   WeatherForecastViewModel() {
     fetchWeatherForecast();
   }
 
-  // Simula una llamada a una API de clima.
-  Future<void> fetchWeatherForecast() async {
+  Future<void> fetchWeatherForecast([String? location]) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
-    // Simula una espera de red de 2 segundos.
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final locationToUse = location ?? _currentLocation;
+      final weatherData = await _apiService.getWeatherData(locationToUse);
 
-    // --- AQUÍ IRÍA TU LÓGICA DE PETICIÓN HTTP REAL ---
-    // final response = await http.get(Uri.parse('https://api.weather.com/...'));
-    // final data = json.decode(response.body);
-    // -------------------------------------------------
+      _currentLocation = locationToUse;
 
-    // Generamos datos de ejemplo.
-    _generateMockData();
+      _hourlyForecasts = weatherData.forecast.hourly.take(12).map((hourly) {
+        return HourlyForecast(
+          time: hourly.time,
+          icon: WeatherUtils.getIconFromCondition(hourly.condition),
+          temperature: WeatherUtils.formatTemperature(hourly.temperature),
+          condition: hourly.condition,
+        );
+      }).toList();
 
-    _isLoading = false;
-    notifyListeners();
+      _dailyForecasts = weatherData.forecast.daily.take(7).map((daily) {
+        return DailyForecast(
+          day: WeatherUtils.getDayInSpanish(daily.day),
+          icon: WeatherUtils.getIconFromCondition(daily.condition),
+          temperature: '${WeatherUtils.formatTemperature(daily.tempMax)} / ${WeatherUtils.formatTemperature(daily.tempMin)}',
+          condition: daily.condition,
+        );
+      }).toList();
+
+      _hasData = true;
+
+    } catch (e) {
+      _error = ErrorHandler.getErrorMessage(e);
+      if (!_hasData) {
+        _generateFallbackData();
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  void _generateMockData() {
-    final random = Random();
-    final icons = [Icons.wb_sunny, Icons.cloud, Icons.grain, Icons.thunderstorm];
-
-    _hourlyForecasts = List.generate(12, (index) {
-      final hour = TimeOfDay.now().hour + index + 1;
+  void _generateFallbackData() {
+    _hourlyForecasts = List.generate(6, (index) {
+      final hour = (DateTime.now().hour + index + 1) % 24;
       return HourlyForecast(
-        time: '${hour % 24}:00',
-        icon: icons[random.nextInt(icons.length)],
-        temperature: '${18 + random.nextInt(10)}°',
+        time: '${hour.toString().padLeft(2, '0')}:00',
+        icon: Icons.help_outline,
+        temperature: '--°',
+        condition: 'desconocido',
       );
     });
 
-    final days = ['Mañana', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom', 'Lun'];
-    _dailyForecasts = List.generate(7, (index) {
+    _dailyForecasts = List.generate(5, (index) {
+      final days = ['Hoy', 'Mañana', 'Mié', 'Jue', 'Vie'];
       return DailyForecast(
         day: days[index],
-        icon: icons[random.nextInt(icons.length)],
-        temperature: '${20 + random.nextInt(8)}° / ${10 + random.nextInt(7)}°',
+        icon: Icons.help_outline,
+        temperature: '--° / --°',
+        condition: 'desconocido',
       );
     });
+  }
+
+  void changeLocation(String location) {
+    if (AppConstants.availableLocations.contains(location) && location != _currentLocation) {
+      fetchWeatherForecast(location);
+    }
+  }
+
+  void refresh() {
+    fetchWeatherForecast();
   }
 }
