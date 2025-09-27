@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/constants/app_constants.dart';
 import '../../viewmodel/weather_forecast_viewmodel.dart';
-import '../../viewmodel/weather_viewmodel.dart';
 import 'daily_forecast_item.dart';
 import 'hourly_forecast_item.dart';
 
@@ -11,8 +9,8 @@ class WeatherForecastWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<WeatherForecastViewModel, WeatherViewModel>(
-      builder: (context, forecastViewModel, weatherViewModel, child) {
+    return Consumer<WeatherForecastViewModel>(
+      builder: (context, forecastViewModel, child) {
         return Container(
           padding: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
@@ -22,49 +20,19 @@ class WeatherForecastWidget extends StatelessWidget {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start, // Alineamos el texto
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Pronóstico',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white.withOpacity(0.5)),
-                    ),
-                    child: DropdownButton<String>(
-                      value: weatherViewModel.currentLocation,
-                      dropdownColor: Colors.black87,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                      underline: Container(),
-                      items: AppConstants.availableLocations.map((location) {
-                        return DropdownMenuItem(
-                          value: location,
-                          child: Text(
-                            AppConstants.locationNames[location] ?? location,
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (newLocation) {
-                        if (newLocation != null) {
-                          weatherViewModel.changeLocation(newLocation);
-                          forecastViewModel.changeLocation(newLocation);
-                        }
-                      },
-                    ),
-                  ),
-                ],
+              // --- INICIO DEL CAMBIO ---
+              // Quitamos el Row y el botón, dejamos solo el título
+              const Text(
+                'Pronóstico',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              // --- FIN DEL CAMBIO ---
               const SizedBox(height: 8),
               if (forecastViewModel.isLoading)
                 const SizedBox(

@@ -4,6 +4,7 @@ import '../model/weather_model.dart';
 import '../viewmodel/weather_viewmodel.dart';
 import '../viewmodel/weather_forecast_viewmodel.dart';
 import 'widgets/current_status_widget.dart';
+import 'widgets/location_selector_widget.dart'; // Importamos el nuevo widget
 import 'widgets/rain_widget.dart';
 import 'widgets/stars_widget.dart';
 import 'widgets/weather_forecast_widget.dart';
@@ -45,8 +46,19 @@ class WeatherScreen extends StatelessWidget {
                 right: 100,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start, // Alineamos al inicio
                   children: [
-                    const CurrentStatusWidget(),
+                    // --- INICIO DEL CAMBIO ---
+                    // Usamos una fila para alinear el estatus y el selector
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Para separarlos
+                      crossAxisAlignment: CrossAxisAlignment.start, // Alineación vertical
+                      children: [
+                        const CurrentStatusWidget(), // Widget de la fecha y hora
+                        const LocationSelectorWidget(), // Nuevo widget del selector
+                      ],
+                    ),
+                    // --- FIN DEL CAMBIO ---
                     const SizedBox(height: 15),
                     const WeatherForecastWidget(),
                     if (viewModel.error != null) ...[

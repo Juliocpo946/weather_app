@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/weather_response.dart';
 import '../../model/weather_model.dart';
 import '../../model/rain_level_model.dart';
 
@@ -50,13 +49,13 @@ class WeatherUtils {
 
   static String getDayInSpanish(String englishDay) {
     final daysMap = {
-      'Lunes': 'Lun',
-      'Martes': 'Mar',
-      'Miercoles': 'Mié',
-      'Jueves': 'Jue',
-      'Viernes': 'Vie',
-      'Sábado': 'Sáb',
-      'Domingo': 'Dom',
+      'Monday': 'Lun',
+      'Tuesday': 'Mar',
+      'Wednesday': 'Mié',
+      'Thursday': 'Jue',
+      'Friday': 'Vie',
+      'Saturday': 'Sáb',
+      'Sunday': 'Dom',
       'Hoy': 'Hoy',
       'Mañana': 'Mañana',
     };
@@ -65,9 +64,6 @@ class WeatherUtils {
 
   static WeatherCondition getConditionFromTime(String time) {
     final hour = int.tryParse(time.split(':')[0]) ?? 12;
-    final isNight = hour >= 19 || hour < 6;
-
-    // Simulación básica basada en la hora
     if (hour >= 14 && hour <= 18) {
       return WeatherCondition.nublado; // Tarde nublada
     } else if (hour >= 20 || hour <= 4) {
