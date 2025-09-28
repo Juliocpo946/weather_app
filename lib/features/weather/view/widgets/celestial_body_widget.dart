@@ -4,25 +4,25 @@ import 'dart:math' as math;
 import '../../viewmodel/weather_viewmodel.dart';
 
 class CelestialBodyWidget extends StatefulWidget {
-  // Corregido: Uso de super parameters para 'key'
   const CelestialBodyWidget({super.key});
 
   @override
-  // Corregido: El nombre de la clase de estado ahora es público
-  CelestialBodyWidgetState createState() => CelestialBodyWidgetState();
+  State<CelestialBodyWidget> createState() => _CelestialBodyWidgetState();
 }
 
-// Corregido: La clase de estado ahora es pública
-class CelestialBodyWidgetState extends State<CelestialBodyWidget>
+class _CelestialBodyWidgetState extends State<CelestialBodyWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  static const Duration _animationDuration = Duration(seconds: 20);
+  static const double _sunSize = 80;
+  static const double _moonSize = 70;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 20), // Duración del ciclo acelerado
+      duration: _animationDuration,
     );
   }
 
@@ -34,88 +34,130 @@ class CelestialBodyWidgetState extends State<CelestialBodyWidget>
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<WeatherViewModel>();
+    return Consumer<WeatherViewModel>(
+      builder: (context, viewModel, child) {
+        _handleAnimation(viewModel.isTimeAccelerated);
 
-    if (viewModel.isTimeAccelerated) {
-      if (!_controller.isAnimating) {
-        _controller.repeat();
-      }
-    } else {
-      if (_controller.isAnimating) {
-        _controller.stop();
-      }
-    }
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            final progress = _getDayProgress(viewModel.isTimeAccelerated);
+            final celestialPositions = _calculateCelestialPositions(progress);
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        double dayProgress;
-
-        if (viewModel.isTimeAccelerated) {
-          dayProgress = _controller.value;
-        } else {
-          final now = DateTime.now();
-          dayProgress = (now.hour * 3600 + now.minute * 60 + now.second) / (24 * 3600);
-        }
-
-        final angle = (dayProgress * 2 * math.pi) - (math.pi / 2);
-        final orbitRadius = MediaQuery.of(context).size.width / 1.8;
-        final center = Offset(
-          MediaQuery.of(context).size.width / 20,
-          MediaQuery.of(context).size.height * 1,
-        );
-
-        return Stack(
-          children: [
-            // --- Sol ---
-            Transform.translate(
-              offset: Offset(
-                center.dx + orbitRadius * math.cos(angle),
-                center.dy + orbitRadius * math.sin(angle),
-              ),
-              child: Center(
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.yellow.shade600,
-                  ),
-                ),
-              ),
-            ),
-            // --- Luna ---
-            Transform.translate(
-              // Corregido: Se eliminó la resta del centro
-              offset: Offset(
-                center.dx + orbitRadius * math.cos(angle + math.pi),
-                center.dy + orbitRadius * math.sin(angle + math.pi),
-              ),
-              child: Center(
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFFd3d3d3),
-                  ),
-                  child: ClipOval(
-                    child: Transform.translate(
-                      offset: const Offset(-15, 0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF0D1117).withOpacity(0.9),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+            return Stack(
+              children: [
+                _buildSun(celestialPositions.sunPosition),
+                _buildMoon(celestialPositions.moonPosition),
+              ],
+            );
+          },
         );
       },
     );
   }
+
+  void _handleAnimation(bool isTimeAccelerated) {
+    if (isTimeAccelerated && !_controller.isAnimating) {
+      _controller.repeat();
+    } else if (!isTimeAccelerated && _controller.isAnimating) {
+      _controller.stop();
+    }
+  }
+
+  double _getDayProgress(bool isTimeAccelerated) {
+    if (isTimeAccelerated) {
+      return _controller.value;
+    } else {
+      final now = DateTime.now();
+      return (now.hour * 3600 + now.minute * 60 + now.second) / (24 * 3600);
+    }
+  }
+
+  CelestialPositions _calculateCelestialPositions(double dayProgress) {
+    final screenSize = MediaQuery.of(context).size;
+    final angle = (dayProgress * 2 * math.pi) - (math.pi / 2);
+    final orbitRadius = screenSize.width / 1.8;
+    final center = Offset(
+      screenSize.width / 20,
+      screenSize.height,
+    );
+
+    return CelestialPositions(
+      sunPosition: Offset(
+        center.dx + orbitRadius * math.cos(angle),
+        center.dy + orbitRadius * math.sin(angle),
+      ),
+      moonPosition: Offset(
+        center.dx + orbitRadius * math.cos(angle + math.pi),
+        center.dy + orbitRadius * math.sin(angle + math.pi),
+      ),
+    );
+  }
+
+  Widget _buildSun(Offset position) {
+    return Transform.translate(
+      offset: position,
+      child: Center(
+        child: Container(
+          width: _sunSize,
+          height: _sunSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.yellow.shade600,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.yellow.withOpacity(0.3),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoon(Offset position) {
+    return Transform.translate(
+      offset: position,
+      child: Center(
+        child: Container(
+          width: _moonSize,
+          height: _moonSize,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Color(0xFFd3d3d3),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey,
+                blurRadius: 10,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: Transform.translate(
+              offset: const Offset(-15, 0),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF0D1117).withOpacity(0.9),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CelestialPositions {
+  final Offset sunPosition;
+  final Offset moonPosition;
+
+  const CelestialPositions({
+    required this.sunPosition,
+    required this.moonPosition,
+  });
 }

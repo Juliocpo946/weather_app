@@ -5,7 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../viewmodel/weather_viewmodel.dart';
 
 class CurrentStatusWidget extends StatefulWidget {
-  const CurrentStatusWidget({Key? key}) : super(key: key);
+  const CurrentStatusWidget({super.key});
 
   @override
   State<CurrentStatusWidget> createState() => _CurrentStatusWidgetState();

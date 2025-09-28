@@ -6,7 +6,7 @@ import '../../utils/range_map.dart';
 
 class RainWidget extends StatefulWidget {
   final RainLevel level;
-  const RainWidget({Key? key, required this.level}) : super(key: key);
+  const RainWidget({super.key, required this.level});
 
   @override
   State<RainWidget> createState() => _RainWidgetState();

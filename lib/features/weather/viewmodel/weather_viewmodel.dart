@@ -8,31 +8,30 @@ import '../../../core/utils/error_handler.dart';
 import '../model/weather_state_model.dart';
 import '../model/rain_level_model.dart';
 import '../model/weather_model.dart' as model;
-import '../model/daily_forecast_model.dart';
-import '../model/hourly_forecast_model.dart';
+import '../model/forecast_model.dart';
 import '../utils/color_palette.dart';
 
 class WeatherViewModel extends ChangeNotifier {
   final WeatherServiceInterface _weatherService = ApiService();
-
   WeatherState _state = WeatherState.initial();
   late Timer _refreshTimer;
 
+  // Getters públicos (acceso directo al estado)
   WeatherState get state => _state;
-
-  // Getters para compatibilidad con widgets existentes
   model.TimeOfDay get currentTimeOfDay => _state.currentTimeOfDay;
   model.WeatherCondition get currentWeather => _state.currentWeather;
   RainLevel get currentRainLevel => _state.currentRainLevel;
-  String get currentTemperature => WeatherUtils.formatTemperature(_state.currentTemperature);
-  String get currentEmoji => WeatherUtils.getEmojiFromCondition(_state.currentCondition, isNight: WeatherUtils.isNightTime());
+  String get currentTemperature => _state.formattedTemperature;
+  String get currentEmoji => _state.currentEmoji;
   String get currentLocation => _state.currentLocation;
   bool get isLoading => _state.isLoading;
   String? get error => _state.error;
   bool get hasData => _state.hasData;
   bool get isTimeAccelerated => _state.isTimeAccelerated;
-  List<HourlyForecast> get hourlyForecasts => _state.hourlyForecasts;
-  List<DailyForecast> get dailyForecasts => _state.dailyForecasts;
+  List<Forecast> get hourlyForecasts => _state.hourlyForecasts;
+  List<Forecast> get dailyForecasts => _state.dailyForecasts;
+  bool get showStars => _state.showStars;
+  double get backgroundOpacity => _state.backgroundOpacity;
 
   WeatherViewModel() {
     _initializeTimer();
@@ -53,6 +52,7 @@ class WeatherViewModel extends ChangeNotifier {
     super.dispose();
   }
 
+  // Métodos de carga de datos
   Future<void> _loadAllWeatherData() async {
     await _loadCurrentWeather();
     await _loadWeatherForecast();
@@ -63,7 +63,6 @@ class WeatherViewModel extends ChangeNotifier {
       _updateState(isLoading: true, error: null);
 
       final weatherData = await _weatherService.getWeatherData(_state.currentLocation);
-
       final weatherCondition = WeatherUtils.mapConditionToEnum(weatherData.current.condition);
       final rainLevel = WeatherUtils.mapConditionToRainLevel(weatherData.current.condition);
 
@@ -93,7 +92,7 @@ class WeatherViewModel extends ChangeNotifier {
       final weatherData = await _weatherService.getWeatherData(_state.currentLocation);
 
       final hourlyForecasts = weatherData.forecast.hourly.take(12).map((hourly) {
-        return HourlyForecast(
+        return Forecast.hourly(
           time: hourly.time,
           icon: WeatherUtils.getIconFromCondition(hourly.condition),
           temperature: WeatherUtils.formatTemperature(hourly.temperature),
@@ -102,7 +101,7 @@ class WeatherViewModel extends ChangeNotifier {
       }).toList();
 
       final dailyForecasts = weatherData.forecast.daily.take(7).map((daily) {
-        return DailyForecast(
+        return Forecast.daily(
           day: WeatherUtils.getDayInSpanish(daily.day),
           icon: WeatherUtils.getIconFromCondition(daily.condition),
           temperature: '${WeatherUtils.formatTemperature(daily.tempMax)} / ${WeatherUtils.formatTemperature(daily.tempMin)}',
@@ -137,7 +136,7 @@ class WeatherViewModel extends ChangeNotifier {
   void _generateFallbackForecastData() {
     final hourlyForecasts = List.generate(6, (index) {
       final hour = (DateTime.now().hour + index + 1) % 24;
-      return HourlyForecast(
+      return Forecast.hourly(
         time: '${hour.toString().padLeft(2, '0')}:00',
         icon: Icons.help_outline,
         temperature: '--°',
@@ -147,7 +146,7 @@ class WeatherViewModel extends ChangeNotifier {
 
     final dailyForecasts = List.generate(5, (index) {
       final days = ['Hoy', 'Mañana', 'Mié', 'Jue', 'Vie'];
-      return DailyForecast(
+      return Forecast.daily(
         day: days[index],
         icon: Icons.help_outline,
         temperature: '--° / --°',
@@ -234,7 +233,7 @@ class WeatherViewModel extends ChangeNotifier {
     _loadAllWeatherData();
   }
 
-  // Getters para el UI
+  // Getter para el gradiente de fondo
   Gradient get backgroundGradient {
     if (_state.currentWeather == model.WeatherCondition.lluvioso) {
       return ColorPalette.rainyGradient;
@@ -249,16 +248,5 @@ class WeatherViewModel extends ChangeNotifier {
       case model.TimeOfDay.noche:
         return ColorPalette.nightGradient;
     }
-  }
-
-  double get backgroundOpacity {
-    if (_state.currentWeather == model.WeatherCondition.nublado) return 0.7;
-    if (_state.currentWeather == model.WeatherCondition.lluvioso) return 0.5;
-    return 1.0;
-  }
-
-  bool get showStars {
-    return _state.currentTimeOfDay == model.TimeOfDay.noche &&
-        _state.currentWeather == model.WeatherCondition.despejado;
   }
 }

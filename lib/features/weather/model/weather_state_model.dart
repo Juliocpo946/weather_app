@@ -1,7 +1,6 @@
 import 'weather_model.dart' as weather_model;
 import 'rain_level_model.dart';
-import 'daily_forecast_model.dart';
-import 'hourly_forecast_model.dart';
+import 'forecast_model.dart';
 
 class WeatherState {
   final weather_model.TimeOfDay currentTimeOfDay;
@@ -14,8 +13,8 @@ class WeatherState {
   final String? error;
   final bool hasData;
   final bool isTimeAccelerated;
-  final List<HourlyForecast> hourlyForecasts;
-  final List<DailyForecast> dailyForecasts;
+  final List<Forecast> hourlyForecasts;
+  final List<Forecast> dailyForecasts;
 
   const WeatherState({
     required this.currentTimeOfDay,
@@ -43,8 +42,8 @@ class WeatherState {
     String? error,
     bool? hasData,
     bool? isTimeAccelerated,
-    List<HourlyForecast>? hourlyForecasts,
-    List<DailyForecast>? dailyForecasts,
+    List<Forecast>? hourlyForecasts,
+    List<Forecast>? dailyForecasts,
   }) {
     return WeatherState(
       currentTimeOfDay: currentTimeOfDay ?? this.currentTimeOfDay,
@@ -76,5 +75,34 @@ class WeatherState {
       hourlyForecasts: const [],
       dailyForecasts: const [],
     );
+  }
+
+  // Computed properties para evitar duplicación en el ViewModel
+  String get formattedTemperature => '${currentTemperature.round()}°C';
+
+  String get currentEmoji {
+    final isNight = _isNightTime();
+    if (currentCondition.contains('tormenta')) return '⛈️';
+    if (currentCondition.contains('lluvia') || currentCondition.contains('chubascos')) return '🌧️';
+    if (currentCondition.contains('nublado')) return '☁️';
+    if (currentCondition.contains('neblina') || currentCondition.contains('niebla')) return '🌫️';
+    if (currentCondition.contains('despejado')) return isNight ? '🌙' : '☀️';
+    return isNight ? '🌙' : '☀️';
+  }
+
+  bool get showStars {
+    return currentTimeOfDay == weather_model.TimeOfDay.noche &&
+        currentWeather == weather_model.WeatherCondition.despejado;
+  }
+
+  double get backgroundOpacity {
+    if (currentWeather == weather_model.WeatherCondition.nublado) return 0.7;
+    if (currentWeather == weather_model.WeatherCondition.lluvioso) return 0.5;
+    return 1.0;
+  }
+
+  bool _isNightTime() {
+    final hour = DateTime.now().hour;
+    return (hour >= 19) || (hour < 6);
   }
 }

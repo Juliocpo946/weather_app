@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodel/weather_viewmodel.dart';
-import 'daily_forecast_item.dart';
-import 'hourly_forecast_item.dart';
+import 'forecast_item_widget.dart';
 
 class WeatherForecastWidget extends StatelessWidget {
   const WeatherForecastWidget({super.key});
@@ -39,64 +38,70 @@ class WeatherForecastWidget extends StatelessWidget {
                   ),
                 )
               else if (viewModel.error != null && !viewModel.hasData)
-                SizedBox(
-                  height: 120,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error, color: Colors.red, size: 28),
-                        const SizedBox(height: 6),
-                        Text(
-                          viewModel.error!,
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 6),
-                        ElevatedButton(
-                          onPressed: () => viewModel.refresh(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.2),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          ),
-                          child: const Text('Reintentar', style: TextStyle(fontSize: 11)),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
+                _buildErrorWidget(viewModel)
               else
-                Column(
-                  children: [
-                    SizedBox(
-                      height: 55,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: viewModel.hourlyForecasts.length,
-                        itemBuilder: (context, index) {
-                          final forecast = viewModel.hourlyForecasts[index];
-                          return HourlyForecastItem(forecast: forecast);
-                        },
-                      ),
-                    ),
-                    const Divider(color: Colors.white54, height: 8),
-                    SizedBox(
-                      height: 70,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: viewModel.dailyForecasts.length,
-                        itemBuilder: (context, index) {
-                          final forecast = viewModel.dailyForecasts[index];
-                          return DailyForecastItem(forecast: forecast);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                _buildForecastContent(viewModel),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildErrorWidget(WeatherViewModel viewModel) {
+    return SizedBox(
+      height: 120,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error, color: Colors.red, size: 28),
+            const SizedBox(height: 6),
+            Text(
+              viewModel.error!,
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            ElevatedButton(
+              onPressed: () => viewModel.refresh(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withOpacity(0.2),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              ),
+              child: const Text('Reintentar', style: TextStyle(fontSize: 11)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForecastContent(WeatherViewModel viewModel) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 55,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: viewModel.hourlyForecasts.length,
+            itemBuilder: (context, index) {
+              return ForecastItemWidget(forecast: viewModel.hourlyForecasts[index]);
+            },
+          ),
+        ),
+        const Divider(color: Colors.white54, height: 8),
+        SizedBox(
+          height: 70,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: viewModel.dailyForecasts.length,
+            itemBuilder: (context, index) {
+              return ForecastItemWidget(forecast: viewModel.dailyForecasts[index]);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
