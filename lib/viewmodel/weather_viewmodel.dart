@@ -22,6 +22,9 @@ class WeatherViewModel extends ChangeNotifier {
   String? _error;
   bool _hasData = false;
 
+  // Nuevo estado para la animación
+  bool _isTimeAccelerated = false;
+
   late Timer _timer;
 
   model.TimeOfDay get currentTimeOfDay => _currentTimeOfDay;
@@ -33,6 +36,8 @@ class WeatherViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasData => _hasData;
+  // Getter para el nuevo estado
+  bool get isTimeAccelerated => _isTimeAccelerated;
 
   WeatherViewModel() {
     _loadWeatherData();
@@ -107,6 +112,8 @@ class WeatherViewModel extends ChangeNotifier {
     final values = model.TimeOfDay.values;
     final nextIndex = (_currentTimeOfDay.index + 1) % values.length;
     _currentTimeOfDay = values[nextIndex];
+    // Activa la animación acelerada
+    _isTimeAccelerated = true;
     notifyListeners();
   }
 
@@ -129,11 +136,15 @@ class WeatherViewModel extends ChangeNotifier {
   void changeLocation(String location) {
     if (AppConstants.availableLocations.contains(location) && location != _currentLocation) {
       _currentLocation = location;
+      // Restaura la animación al cambiar de ubicación
+      _isTimeAccelerated = false;
       _loadWeatherData();
     }
   }
 
   void refresh() {
+    // Restaura la animación al actualizar
+    _isTimeAccelerated = false;
     _loadWeatherData();
   }
 
