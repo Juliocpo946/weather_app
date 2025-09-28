@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel/weather_forecast_viewmodel.dart';
+import '../../viewmodel/weather_viewmodel.dart';
 import 'daily_forecast_item.dart';
 import 'hourly_forecast_item.dart';
 
 class WeatherForecastWidget extends StatelessWidget {
-  const WeatherForecastWidget({Key? key}) : super(key: key);
+  const WeatherForecastWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WeatherForecastViewModel>(
-      builder: (context, forecastViewModel, child) {
+    return Consumer<WeatherViewModel>(
+      builder: (context, viewModel, child) {
         return Container(
           padding: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
@@ -20,10 +20,8 @@ class WeatherForecastWidget extends StatelessWidget {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start, // Alineamos el texto
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- INICIO DEL CAMBIO ---
-              // Quitamos el Row y el botón, dejamos solo el título
               const Text(
                 'Pronóstico',
                 style: TextStyle(
@@ -32,16 +30,15 @@ class WeatherForecastWidget extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              // --- FIN DEL CAMBIO ---
               const SizedBox(height: 8),
-              if (forecastViewModel.isLoading)
+              if (viewModel.isLoading)
                 const SizedBox(
                   height: 120,
                   child: Center(
                     child: CircularProgressIndicator(color: Colors.white),
                   ),
                 )
-              else if (forecastViewModel.error != null)
+              else if (viewModel.error != null && !viewModel.hasData)
                 SizedBox(
                   height: 120,
                   child: Center(
@@ -51,13 +48,13 @@ class WeatherForecastWidget extends StatelessWidget {
                         const Icon(Icons.error, color: Colors.red, size: 28),
                         const SizedBox(height: 6),
                         Text(
-                          forecastViewModel.error!,
+                          viewModel.error!,
                           style: const TextStyle(color: Colors.white, fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 6),
                         ElevatedButton(
-                          onPressed: () => forecastViewModel.refresh(),
+                          onPressed: () => viewModel.refresh(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white.withOpacity(0.2),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -75,9 +72,9 @@ class WeatherForecastWidget extends StatelessWidget {
                       height: 55,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: forecastViewModel.hourlyForecasts.length,
+                        itemCount: viewModel.hourlyForecasts.length,
                         itemBuilder: (context, index) {
-                          final forecast = forecastViewModel.hourlyForecasts[index];
+                          final forecast = viewModel.hourlyForecasts[index];
                           return HourlyForecastItem(forecast: forecast);
                         },
                       ),
@@ -87,9 +84,9 @@ class WeatherForecastWidget extends StatelessWidget {
                       height: 70,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: forecastViewModel.dailyForecasts.length,
+                        itemCount: viewModel.dailyForecasts.length,
                         itemBuilder: (context, index) {
-                          final forecast = forecastViewModel.dailyForecasts[index];
+                          final forecast = viewModel.dailyForecasts[index];
                           return DailyForecastItem(forecast: forecast);
                         },
                       ),

@@ -4,12 +4,14 @@ import 'package:http/http.dart' as http;
 import '../constants/app_constants.dart';
 import '../models/weather_response.dart';
 import '../utils/error_handler.dart';
+import 'weather_service_interface.dart';
 
-class ApiService {
+class ApiService implements WeatherServiceInterface {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
 
+  @override
   Future<WeatherResponse> getWeatherData(String location) async {
     try {
       final uri = Uri.parse('${AppConstants.baseUrl}/weather/$location');

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/weather_model.dart';
 import '../viewmodel/weather_viewmodel.dart';
-import '../viewmodel/weather_forecast_viewmodel.dart';
-import 'widgets/celestial_body_widget.dart'; // Importa el nuevo widget
+import 'widgets/celestial_body_widget.dart';
 import 'widgets/current_status_widget.dart';
 import 'widgets/location_selector_widget.dart';
 import 'widgets/mountain_painter.dart';
@@ -12,7 +11,7 @@ import 'widgets/stars_widget.dart';
 import 'widgets/weather_forecast_widget.dart';
 
 class WeatherScreen extends StatelessWidget {
-  const WeatherScreen({Key? key}) : super(key: key);
+  const WeatherScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,14 +25,12 @@ class WeatherScreen extends StatelessWidget {
               AnimatedContainer(
                 duration: const Duration(seconds: 2),
                 curve: Curves.easeInOut,
-                decoration:
-                BoxDecoration(gradient: viewModel.backgroundGradient),
+                decoration: BoxDecoration(gradient: viewModel.backgroundGradient),
               ),
               AnimatedContainer(
                 duration: const Duration(seconds: 2),
                 curve: Curves.easeInOut,
-                color:
-                Colors.black.withOpacity(1 - viewModel.backgroundOpacity),
+                color: Colors.black.withOpacity(1 - viewModel.backgroundOpacity),
               ),
               AnimatedOpacity(
                 duration: const Duration(seconds: 2),
@@ -41,10 +38,10 @@ class WeatherScreen extends StatelessWidget {
                 child: const StarsWidget(numberOfStars: 150),
               ),
 
-              // --- NUEVO WIDGET DEL SOL Y LA LUNA ---
+              // Cuerpos celestiales
               const CelestialBodyWidget(),
 
-              // Montañas posicionadas
+              // Montañas
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -54,16 +51,15 @@ class WeatherScreen extends StatelessWidget {
                   size: Size(MediaQuery.of(context).size.width, 200),
                 ),
               ),
-              // Lluvia (si es necesario)
+
+              // Lluvia
               AnimatedOpacity(
                 duration: const Duration(seconds: 1),
-                opacity:
-                viewModel.currentWeather == WeatherCondition.lluvioso
-                    ? 1.0
-                    : 0.0,
+                opacity: viewModel.currentWeather == WeatherCondition.lluvioso ? 1.0 : 0.0,
                 child: RainWidget(level: viewModel.currentRainLevel),
               ),
-              // Contenido principal (pronóstico, etc.)
+
+              // Contenido principal
               Positioned(
                 bottom: 40,
                 left: 30,
@@ -72,12 +68,12 @@ class WeatherScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const CurrentStatusWidget(),
-                        const LocationSelectorWidget(),
+                        CurrentStatusWidget(),
+                        LocationSelectorWidget(),
                       ],
                     ),
                     const SizedBox(height: 15),
@@ -101,8 +97,7 @@ class WeatherScreen extends StatelessWidget {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.refresh,
-                                  color: Colors.white),
+                              icon: const Icon(Icons.refresh, color: Colors.white),
                               onPressed: () => viewModel.refresh(),
                             ),
                           ],
@@ -167,12 +162,8 @@ class WeatherScreen extends StatelessWidget {
               const SizedBox(height: 10),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 500),
-                opacity: weatherState.currentWeather ==
-                    WeatherCondition.lluvioso
-                    ? 1.0
-                    : 0.0,
-                child: weatherState.currentWeather ==
-                    WeatherCondition.lluvioso
+                opacity: weatherState.currentWeather == WeatherCondition.lluvioso ? 1.0 : 0.0,
+                child: weatherState.currentWeather == WeatherCondition.lluvioso
                     ? Container(
                   decoration: BoxDecoration(
                     color: Colors.transparent,
@@ -185,8 +176,7 @@ class WeatherScreen extends StatelessWidget {
                     heroTag: 'rain',
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    child: const Icon(Icons.water_drop_outlined,
-                        color: Colors.white),
+                    child: const Icon(Icons.water_drop_outlined, color: Colors.white),
                   ),
                 )
                     : const SizedBox(),
@@ -199,10 +189,7 @@ class WeatherScreen extends StatelessWidget {
                   border: Border.all(color: Colors.white, width: 2),
                 ),
                 child: FloatingActionButton(
-                  onPressed: () {
-                    viewModel.refresh();
-                    context.read<WeatherForecastViewModel>().refresh();
-                  },
+                  onPressed: () => viewModel.refresh(),
                   tooltip: 'Actualizar',
                   heroTag: 'refresh',
                   backgroundColor: Colors.transparent,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../model/weather_model.dart';
-import '../../model/rain_level_model.dart';
+import '../../features/weather/model/weather_model.dart';
+import '../../features/weather/model/rain_level_model.dart';
 
 class WeatherUtils {
   static WeatherCondition mapConditionToEnum(String condition) {

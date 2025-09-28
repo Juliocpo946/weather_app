@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../model/daily_forecast_model.dart';
 import '../../viewmodel/weather_viewmodel.dart';
-import '../../core/utils/weather_utils.dart';
+import '../../../../core/utils/weather_utils.dart';
 
 class DailyForecastItem extends StatelessWidget {
   final DailyForecast forecast;
