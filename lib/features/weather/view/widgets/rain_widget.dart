@@ -13,14 +13,12 @@ class RainWidget extends StatefulWidget {
 }
 
 class _RainWidgetState extends State<RainWidget> {
-  // Inicializamos la lista como vacía.
   List<_RainDrop> rainDrops = [];
   bool _isInitialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Solo construimos las gotas la primera vez que este método se llama.
     if (!_isInitialized) {
       _buildRainDrops();
       _isInitialized = true;
@@ -31,13 +29,11 @@ class _RainWidgetState extends State<RainWidget> {
   void didUpdateWidget(covariant RainWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.level != widget.level) {
-      // Si el nivel de lluvia cambia, reconstruimos las gotas.
       _buildRainDrops();
     }
   }
 
   void _buildRainDrops() {
-    // Ahora obtenemos el tamaño de la pantalla aquí, donde el contexto es válido.
     final screenSize = MediaQuery.sizeOf(context);
     setState(() {
       rainDrops = List.generate(
@@ -56,8 +52,6 @@ class _RainWidgetState extends State<RainWidget> {
     return Stack(children: rainDrops);
   }
 }
-
-// El resto del código (_RainDrop, _RainDropState) permanece igual.
 
 class _RainDrop extends StatefulWidget {
   final double screenHeight, screenWidth;

@@ -65,9 +65,9 @@ class WeatherUtils {
   static WeatherCondition getConditionFromTime(String time) {
     final hour = int.tryParse(time.split(':')[0]) ?? 12;
     if (hour >= 14 && hour <= 18) {
-      return WeatherCondition.nublado; // Tarde nublada
+      return WeatherCondition.nublado;
     } else if (hour >= 20 || hour <= 4) {
-      return WeatherCondition.lluvioso; // Noche lluviosa ocasional
+      return WeatherCondition.lluvioso;
     }
     return WeatherCondition.despejado;
   }

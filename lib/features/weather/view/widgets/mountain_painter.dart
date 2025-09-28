@@ -4,10 +4,9 @@ class MountainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF1E5631) // Un verde más oscuro
+      ..color = const Color(0xFF1E5631)
       ..style = PaintingStyle.fill;
 
-    // Lista de montañas con diferentes tamaños y posiciones
     final mountains = [
       {'x': 0.5, 'y': 0.3, 'width': 0.6},
       {'x': 0.2, 'y': 0.5, 'width': 0.4},
