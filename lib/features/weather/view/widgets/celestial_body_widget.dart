@@ -13,7 +13,7 @@ class CelestialBodyWidget extends StatefulWidget {
 class _CelestialBodyWidgetState extends State<CelestialBodyWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  static const Duration _animationDuration = Duration(seconds: 20);
+  static const Duration _animationDuration = Duration(minutes: 5);
   static const double _sunSize = 80;
   static const double _moonSize = 70;
 
@@ -24,6 +24,7 @@ class _CelestialBodyWidgetState extends State<CelestialBodyWidget>
       vsync: this,
       duration: _animationDuration,
     );
+    _controller.repeat();
   }
 
   @override
@@ -36,12 +37,10 @@ class _CelestialBodyWidgetState extends State<CelestialBodyWidget>
   Widget build(BuildContext context) {
     return Consumer<WeatherViewModel>(
       builder: (context, viewModel, child) {
-        _handleAnimation(viewModel.isTimeAccelerated);
-
         return AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            final progress = _getDayProgress(viewModel.isTimeAccelerated);
+            final progress = _controller.value;
             final celestialPositions = _calculateCelestialPositions(progress);
 
             return Stack(
@@ -54,23 +53,6 @@ class _CelestialBodyWidgetState extends State<CelestialBodyWidget>
         );
       },
     );
-  }
-
-  void _handleAnimation(bool isTimeAccelerated) {
-    if (isTimeAccelerated && !_controller.isAnimating) {
-      _controller.repeat();
-    } else if (!isTimeAccelerated && _controller.isAnimating) {
-      _controller.stop();
-    }
-  }
-
-  double _getDayProgress(bool isTimeAccelerated) {
-    if (isTimeAccelerated) {
-      return _controller.value;
-    } else {
-      final now = DateTime.now();
-      return (now.hour * 3600 + now.minute * 60 + now.second) / (24 * 3600);
-    }
   }
 
   CelestialPositions _calculateCelestialPositions(double dayProgress) {

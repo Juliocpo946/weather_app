@@ -12,7 +12,6 @@ class WeatherState {
   final bool isLoading;
   final String? error;
   final bool hasData;
-  final bool isTimeAccelerated;
   final List<Forecast> hourlyForecasts;
   final List<Forecast> dailyForecasts;
 
@@ -26,7 +25,6 @@ class WeatherState {
     required this.isLoading,
     this.error,
     required this.hasData,
-    required this.isTimeAccelerated,
     required this.hourlyForecasts,
     required this.dailyForecasts,
   });
@@ -41,7 +39,6 @@ class WeatherState {
     bool? isLoading,
     String? error,
     bool? hasData,
-    bool? isTimeAccelerated,
     List<Forecast>? hourlyForecasts,
     List<Forecast>? dailyForecasts,
   }) {
@@ -55,7 +52,6 @@ class WeatherState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       hasData: hasData ?? this.hasData,
-      isTimeAccelerated: isTimeAccelerated ?? this.isTimeAccelerated,
       hourlyForecasts: hourlyForecasts ?? this.hourlyForecasts,
       dailyForecasts: dailyForecasts ?? this.dailyForecasts,
     );
@@ -71,13 +67,11 @@ class WeatherState {
       currentLocation: 'suchiapa',
       isLoading: false,
       hasData: false,
-      isTimeAccelerated: false,
       hourlyForecasts: const [],
       dailyForecasts: const [],
     );
   }
 
-  // Computed properties para evitar duplicación en el ViewModel
   String get formattedTemperature => '${currentTemperature.round()}°C';
 
   String get currentEmoji {

@@ -27,7 +27,6 @@ class WeatherViewModel extends ChangeNotifier {
   bool get isLoading => _state.isLoading;
   String? get error => _state.error;
   bool get hasData => _state.hasData;
-  bool get isTimeAccelerated => _state.isTimeAccelerated;
   List<Forecast> get hourlyForecasts => _state.hourlyForecasts;
   List<Forecast> get dailyForecasts => _state.dailyForecasts;
   bool get showStars => _state.showStars;
@@ -195,10 +194,7 @@ class WeatherViewModel extends ChangeNotifier {
   void cycleTimeOfDay() {
     final values = model.TimeOfDay.values;
     final nextIndex = (_state.currentTimeOfDay.index + 1) % values.length;
-    _state = _state.copyWith(
-      currentTimeOfDay: values[nextIndex],
-      isTimeAccelerated: true,
-    );
+    _state = _state.copyWith(currentTimeOfDay: values[nextIndex]);
     notifyListeners();
   }
 
@@ -220,16 +216,12 @@ class WeatherViewModel extends ChangeNotifier {
 
   void changeLocation(String location) {
     if (AppConstants.availableLocations.contains(location) && location != _state.currentLocation) {
-      _state = _state.copyWith(
-        currentLocation: location,
-        isTimeAccelerated: false,
-      );
+      _state = _state.copyWith(currentLocation: location);
       _loadAllWeatherData();
     }
   }
 
   void refresh() {
-    _state = _state.copyWith(isTimeAccelerated: false);
     _loadAllWeatherData();
   }
 
